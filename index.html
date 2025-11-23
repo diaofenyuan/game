@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>我的世界 · 离线版品牌互动小游戏</title>
+  <meta name="description" content="Minecraft（我的世界）主题 · 离线单文件 · 无任何外部依赖"/>
+  <style>
+    :root{
+      --brand-primary:#3C8527;
+      --brand-accent:#2EC4B6;
+      --ink-1:#0f172a; /* slate-900 */
+      --ink-2:#334155; /* slate-700 */
+      --ink-3:#64748b; /* slate-500 */
+      --bg-1:#f8fff0;
+      --bg-2:#ecfdf5;
+      --card:#ffffff;
+      --ok:#16a34a;
+      --warn:#f59e0b;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+      color:var(--ink-1);
+      background: linear-gradient(135deg,var(--bg-1),var(--bg-2));
+    }
+    .container{max-width:1000px;margin:0 auto;padding:24px}
+    .title{
+      display:flex;align-items:center;gap:12px;margin:0 0 8px 0;
+      font-weight:800;letter-spacing:.5px;
+    }
+    .badge{
+      padding:6px 10px;border:1px solid rgba(0,0,0,.06);
+      background: rgba(46,196,182,.12); color:#0b5b55; border-radius:999px;
+      font-size:12px; font-weight:600
+    }
+    .subtitle{margin:0;color:var(--ink-2)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:18px}
+    @media (max-width:900px){ .grid{grid-template-columns:repeat(6,1fr)} }
+    @media (max-width:640px){ .grid{grid-template-columns:repeat(4,1fr)} }
+    .card{
+      grid-column:span 4;background:var(--card);border-radius:16px;
+      border:1px solid rgba(0,0,0,.08); padding:14px;
+      box-shadow:0 6px 20px rgba(0,0,0,.06);
+      cursor:pointer; user-select:none; transition:transform .08s ease, box-shadow .12s ease, border-color .12s ease, background .12s ease;
+      position:relative; overflow:hidden;
+    }
+    .card:hover{transform:translateY(-2px); box-shadow:0 10px 28px rgba(0,0,0,.08)}
+    .card.selected{outline:2px solid var(--brand-accent); border-color:var(--brand-accent); background:linear-gradient(180deg,#ffffff, #ebfffc)}
+    .card .k{font-size:13px;color:var(--ink-3);letter-spacing:.2px}
+    .card .v{display:flex;align-items:center;gap:10px;margin-top:6px}
+    .emoji{font-size:22px}
+    .desc{color:var(--ink-2);font-size:14px;margin-top:6px;line-height:1.35}
+    .chip{display:inline-flex;align-items:center;gap:6px;border:1px dashed rgba(0,0,0,.18);padding:6px 8px;border-radius:10px;background:#fff}
+    .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+    button{
+      appearance:none; border:none; border-radius:12px; padding:12px 16px; font-weight:700; cursor:pointer;
+      background:linear-gradient(90deg,var(--brand-primary),var(--brand-accent)); color:white; box-shadow:0 8px 24px rgba(60,133,39,.25);
+      transition:transform .06s ease, filter .12s ease;
+    }
+    button:hover{filter:brightness(1.04)}
+    button:active{transform:translateY(1px)}
+    .btn-ghost{background:#fff;color:var(--ink-1);border:1px solid rgba(0,0,0,.08);box-shadow:none}
+    .muted{color:var(--ink-3);font-size:12px}
+    .section{margin-top:22px}
+    .section h3{margin:0 0 8px 0}
+    .pillset{display:flex;gap:8px;flex-wrap:wrap}
+    .pill{
+      border-radius:999px;padding:8px 12px;border:1px solid rgba(0,0,0,.1);background:#fff;cursor:pointer;font-weight:600;font-size:14px;
+     color:var(--ink-1);}
+    .pill.active{border-color:var(--brand-primary); background: #eaffea; color:#14532d}
+    .result{
+      margin-top:18px; display:none;
+    }
+    .badgebox{
+      display:flex; gap:16px; align-items:center; flex-wrap:wrap;
+      border:1px solid rgba(0,0,0,.08); background:#fff; padding:16px; border-radius:16px;
+    }
+    .pixel{
+      width:140px; height:140px; border-radius:16px; position:relative; overflow:hidden;
+      background: conic-gradient(from 45deg, #a7f3d0 0 25%, #bef264 0 50%, #86efac 0 75%, #99f6e4 0 100%);
+      image-rendering: pixelated; box-shadow: inset 0 0 0 8px rgba(0,0,0,.06);
+    }
+    .pixel::before, .pixel::after{
+      content:""; position:absolute; inset:0;
+      background:
+        linear-gradient(#0000 15px, rgba(0,0,0,.08) 15px 16px, #0000 16px) 0 0/16px 16px,
+        linear-gradient(90deg, #0000 15px, rgba(0,0,0,.08) 15px 16px, #0000 16px) 0 0/16px 16px;
+      mix-blend-mode: multiply;
+      pointer-events:none;
+    }
+    .scoretag{font-weight:800;font-size:28px;color:#14532d}
+    .tier{font-weight:800}
+    .code{background:#0b1220;color:#d1e7ff;padding:12px;border-radius:10px;overflow:auto;font-family:ui-monospace,Consolas,Monaco,monospace;font-size:12px}
+    footer{margin:28px 0 12px 0;color:var(--ink-3);font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <h1 class="title">我的世界 · 品牌互动小游戏</h1>
+    </div>
+    <p class="subtitle">方块之上，创造你的世界。选择你的玩法、挑选喜欢的要素，生成你的像素徽章并计算段位。</p>
+
+    <div class="section">
+      <h3>1. 你的玩法</h3>
+      <div class="pillset" id="personaSet"></div>
+      <div class="muted">从 <strong>生存 / 创造 / 联机</strong> 中任选其一。</div>
+    </div>
+
+    <div class="section">
+      <h3>2. 选择你最看重的要素（可多选）</h3>
+      <div class="grid" id="blockGrid"></div>
+    </div>
+
+    <div class="controls">
+      <button id="goBtn">生成我的像素徽章</button>
+      <button class="btn-ghost" id="resetBtn">重置</button>
+    </div>
+
+    <div class="result" id="resultBox">
+      <h3>结果</h3>
+      <div class="badgebox">
+        <div class="pixel" aria-hidden="true"></div>
+        <div>
+          <div>段位：<span class="tier" id="tierText">—</span></div>
+          <div style="margin-top:6px">称号：<span class="tier" id="titleText">—</span></div>
+          <div style="margin-top:6px">总分：<span class="scoretag" id="scoreText">0</span></div>
+          <div class="muted" style="margin-top:6px">玩法：<span id="personaText">—</span> · 要素：<span id="blocksText">—</span></div>
+          <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap">
+            <button id="copyBtn" class="btn-ghost">复制结果 JSON</button>
+            <button id="saveBtn" class="btn-ghost">保存到本地（localStorage）</button>
+          </div>
+        </div>
+      </div>
+<div class="muted" style="margin-top:6px">页面会派发 <code>BrandGameComplete</code> 事件，detail 如上。你也可以在控制台监听：
+          <code>window.addEventListener('BrandGameComplete', e => console.log(e.detail))</code>
+        </div>
+      </div>
+    </div>
+
+    <footer>© 离线版 · Minecraft 配置已永久写入 · 可直接拷贝分发</footer>
+  </div>
+
+  <script>
+  (function(){
+    // —— 永久配置（写死在文件里） ——
+    const BRAND_CONFIG = {
+      brandKey: "minecraft",
+      brandName: "我的世界",
+      slogan: "方块之上，创造你的世界",
+      primary: "#3C8527",
+      accent: "#2EC4B6",
+      proposition: ["生存","创造","联机"],
+      valueBlocks: [
+        {"key": "build", "label": "建筑", "emoji": "🏗️", "desc": "像素方块也能成地标", "weight": 3},
+        {"key": "survive", "label": "生存", "emoji": "⛏️", "desc": "探索、采矿与对抗夜晚", "weight": 3},
+        {"key": "redstone", "label": "红石", "emoji": "🔌", "desc": "电路机关与自动化核心", "weight": 5},
+        {"key": "adventure", "label": "冒险", "emoji": "🧭", "desc": "探险地牢遗迹与任务", "weight": 3},
+        {"key": "coop", "label": "联机", "emoji": "🤝", "desc": "和好友协作更有趣", "weight": 2},
+        {"key": "creative", "label": "创造", "emoji": "🎨", "desc": "无限资源自由造", "weight": 2},
+        {"key": "enchant", "label": "附魔", "emoji": "✨", "desc": "收集与组合附魔词条", "weight": 3},
+        {"key": "alchemy", "label": "炼药", "emoji": "⚗️", "desc": "调配药水与增益", "weight": 3},
+        {"key": "farming", "label": "农牧", "emoji": "🌾", "desc": "种植繁育与自动收割", "weight": 2},
+        {"key": "village", "label": "村庄经营", "emoji": "🏘️", "desc": "刷村民与布局家园", "weight": 3},
+        {"key": "trade", "label": "交易", "emoji": "💰", "desc": "刷折扣与交易循环", "weight": 2},
+        {"key": "nether", "label": "下界攻略", "emoji": "🔥", "desc": "堡垒遗迹与交通枢纽", "weight": 4},
+        {"key": "end", "label": "末地征战", "emoji": "🐉", "desc": "击败末影龙与拓展末地", "weight": 5},
+        {"key": "ocean", "label": "海洋探索", "emoji": "🌊", "desc": "海底神殿与沉船宝藏", "weight": 3},
+        {"key": "automation", "label": "自动化", "emoji": "🤖", "desc": "循环系统与资源流水线", "weight": 5},
+        {"key": "railway", "label": "铁路运输", "emoji": "🚆", "desc": "红石车站与物流网络", "weight": 4},
+        {"key": "command", "label": "命令方块", "emoji": "🧪", "desc": "指令编程与机关脚本", "weight": 5},
+        {"key": "mod", "label": "模组玩法", "emoji": "🧩", "desc": "工业/魔法/科幻扩展", "weight": 4},
+        {"key": "datapack", "label": "整合包", "emoji": "📦", "desc": "高定规则与玩法合集", "weight": 4},
+        {"key": "speedrun", "label": "速通", "emoji": "⚡", "desc": "路线优化与极限操作", "weight": 5},
+        {"key": "challenge", "label": "挑战地图", "emoji": "🎯", "desc": "解谜跑酷与机关试炼", "weight": 4},
+        {"key": "hardcore", "label": "极限模式", "emoji": "💀", "desc": "一条命的刺激与成就", "weight": 5},
+        {"key": "aesthetics", "label": "建筑美学", "emoji": "🏛️", "desc": "比例、材质与光影", "weight": 4},
+        {"key": "pixelart", "label": "像素艺术", "emoji": "🖼️", "desc": "马赛克画与地标像素", "weight": 3}
+      ],
+      rewardTiers: [
+        { min: 24, title:"红石大师",   perk:"解锁动态头像框（虚拟）" },
+        { min: 12, title:"资深建筑师", perk:"解锁像素壁纸与贴纸包（虚拟）" },
+        { min:  0, title:"新手矿工",   perk:"获得像素徽章与称号（虚拟）" },
+      ]
+    };
+
+        const SPECIAL_CORE = {
+      build:"筑境宗师",
+      survive:"荒野典守",
+      redstone:"红石玄匠",
+      adventure:"远征拓星",
+      coop:"协作统领",
+      creative:"造境炼师",
+      enchant:"符文诠释师",
+      alchemy:"灵药贤者",
+      farming:"牧野总管",
+      village:"村政监理",
+      trade:"商路谋士",
+      nether:"下界拓疆使",
+      end:"末空逐星",
+      ocean:"深渊测绘师",
+      automation:"自运机巧师",
+      railway:"铁道总监",
+      command:"术式执令官",
+      mod:"模组编构师",
+      datapack:"整核构域师",
+      speedrun:"霆速破关者",
+      challenge:"秘域破局者",
+      hardcore:"极境见证官",
+      aesthetics:"像素美学监造",
+      pixelart:"像素绣绘师"
+    };
+    const SPECIAL_MODIFIERS = {
+      build:"筑境工法",
+      survive:"生存纲要",
+      redstone:"红石流派",
+      adventure:"远征谋略",
+      coop:"联机协同",
+      creative:"造境思维",
+      enchant:"符文流派",
+      alchemy:"灵药工坊",
+      farming:"牧野体系",
+      village:"村政法典",
+      trade:"商路金融",
+      nether:"下界通途",
+      end:"末空推进",
+      ocean:"海渊地形",
+      automation:"自动化流水",
+      railway:"轨道系统",
+      command:"命令术式",
+      mod:"模组矩阵",
+      datapack:"整核工坊",
+      speedrun:"速通路线",
+      challenge:"试炼机关",
+      hardcore:"极限守则",
+      aesthetics:"美学语汇",
+      pixelart:"像素画派"
+    };
+    const PERSONA_PREFIX = { "生存":"荒野", "创造":"造境", "联机":"协作" };
+    function makeSpecialTitle(k1, k2, persona){
+      const base = SPECIAL_CORE[k1] || "特级冒险者";
+      const mod  = k2 ? (SPECIAL_MODIFIERS[k2] || "") : "";
+      const pre  = PERSONA_PREFIX[persona] ? PERSONA_PREFIX[persona] + "·" : "";
+      return `${pre}${base}`;
+    }
+    function djb2(s){
+      let h = 5381;
+      for(let i=0;i<s.length;i++){ h = ((h<<5)+h) + s.charCodeAt(i); }
+      return h >>> 0;
+    }
+    function setPixelByKeys(keys){
+      const seed = djb2(keys.join('|'));
+      const h1 = seed % 360;
+      const h2 = (seed >> 7) % 360;
+      const h3 = (seed >> 14) % 360;
+      const c1 = `hsl(${h1} 80% 80%)`;
+      const c2 = `hsl(${h2} 75% 78%)`;
+      const c3 = `hsl(${h3} 70% 82%)`;
+      const el = document.querySelector('.pixel');
+      if(el){
+        el.style.background = `conic-gradient(from 45deg, ${c1} 0 25%, ${c2} 0 50%, ${c3} 0 75%, ${c1} 0 100%)`;
+      }
+    }
+
+
+    // —— 控件绘制 ——
+    const $personaSet = document.getElementById("personaSet");
+    const $blockGrid  = document.getElementById("blockGrid");
+    const $go         = document.getElementById("goBtn");
+    const $reset      = document.getElementById("resetBtn");
+    const $resultBox  = document.getElementById("resultBox");
+    const $tierText   = document.getElementById("tierText");const $personaText= document.getElementById("personaText");
+    const $titleText = document.getElementById("titleText");
+    const $scoreText  = document.getElementById("scoreText");
+    const $blocksText = document.getElementById("blocksText");
+const $copy       = document.getElementById("copyBtn");
+    const $save       = document.getElementById("saveBtn");
+
+    
+    let __lastResult = null;
+// 玩法 pills
+    let persona = null;
+    BRAND_CONFIG.proposition.forEach(p => {
+      const el = document.createElement('button');
+      el.className = "pill";
+      el.textContent = p;
+      el.onclick = () => {
+        persona = p;
+        Array.from($personaSet.children).forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+      };
+      $personaSet.appendChild(el);
+    });
+
+    // 要素 cards
+    const selected = new Set();
+    BRAND_CONFIG.valueBlocks.forEach(b => {
+      const card = document.createElement('div');
+      card.className = "card";
+      card.setAttribute('role','checkbox');
+      card.setAttribute('aria-checked','false');
+      card.innerHTML = `
+        <div class="k">${b.key}</div>
+        <div class="v"><span class="emoji">${b.emoji}</span><strong>${b.label}</strong></div>
+        <div class="desc">${b.desc}</div>
+      `;
+      card.onclick = () => {
+        if(selected.has(b.key)){ selected.delete(b.key); card.classList.remove('selected'); card.setAttribute('aria-checked','false'); }
+        else { selected.add(b.key); card.classList.add('selected'); card.setAttribute('aria-checked','true'); }
+      };
+      $blockGrid.appendChild(card);
+    });
+
+    function calcScore(){
+      let s = 0;
+      BRAND_CONFIG.valueBlocks.forEach(b => { if(selected.has(b.key)) s += (b.weight||0); });
+      // persona 可给个小加成：选择后 +2 分（让段位更容易跨档）
+      if(persona) s += 2;
+      return s;
+    }
+
+    function pickTier(score){
+      for(const t of BRAND_CONFIG.rewardTiers){
+        if(score >= t.min) return t;
+      }
+      return BRAND_CONFIG.rewardTiers[BRAND_CONFIG.rewardTiers.length-1];
+    }
+
+    function renderResult(){
+      const score = calcScore();
+      const tier  = pickTier(score);
+      const data = {
+        brandKey: BRAND_CONFIG.brandKey,
+        persona: persona,
+        blocks: BRAND_CONFIG.valueBlocks.filter(b => selected.has(b.key)).map(b => b.key),
+        score,
+        tier: { title: tier.title, min: tier.min, perk: tier.perk },
+        ts: new Date().toISOString(),
+      };
+      $tierText.textContent = tier.title;
+      $scoreText.textContent = String(score);$personaText.textContent = persona || "—";
+      $blocksText.textContent = data.blocks.length ? data.blocks.join("、") : "—";
+
+      // 计算称号：按权重选出前二关键要素
+      const picks = BRAND_CONFIG.valueBlocks
+        .filter(b => selected.has(b.key))
+        .sort((a,b) => (b.weight||0) - (a.weight||0) || a.key.localeCompare(b.key));
+      let titleStr = "—";
+      if(picks.length){
+        const k1 = picks[0].key;
+        const k2 = picks[1] ? picks[1].key : null;
+        titleStr = makeSpecialTitle(k1, k2, persona);
+      }
+      $titleText.textContent = titleStr;
+      // 根据选择生成像素徽章配色（确保不同组合有不同的图案）
+      setPixelByKeys(BRAND_CONFIG.valueBlocks.filter(b => selected.has(b.key)).map(b => b.key).sort());
+
+$resultBox.style.display = "block";
+
+      // 事件派发（保持与在线版一致）
+      window.dispatchEvent(new CustomEvent("BrandGameComplete", { detail: data }));
+      __lastResult = data;
+      return data;
+    }
+
+    $go.onclick = () => {
+      if(!persona){
+        alert("请选择你的玩法（生存 / 创造 / 联机）");
+        return;
+      }
+      renderResult();
+    };
+
+    $reset.onclick = () => {
+      persona = null;
+      Array.from($personaSet.children).forEach(c => c.classList.remove('active'));
+      selected.clear();
+      Array.from($blockGrid.children).forEach(c => { c.classList.remove('selected'); c.setAttribute('aria-checked','false'); });
+      $resultBox.style.display = "none";
+    };
+
+    
+    $copy.onclick = async () => {
+  try {
+    const text = JSON.stringify(__lastResult || { tip: "请先点击“生成我的像素徽章”" }, null, 2);
+    await navigator.clipboard.writeText(text);
+    $copy.textContent = "已复制";
+    setTimeout(() => $copy.textContent = "复制结果 JSON", 1200);
+  } catch (e) {
+    alert("复制失败：" + e.message);
+  }
+};
+
+    $save.onclick = () => {
+      const data = renderResult();
+      localStorage.setItem("myworld:result", JSON.stringify(data));
+      alert("已保存到本地（localStorage）。");
+    };
+
+    // 若有历史结果，展示一下
+    try{
+      const last = localStorage.getItem("myworld:result");
+      if(last){
+        const d = JSON.parse(last);
+        // 恢复 persona & 选中状态
+        Array.from($personaSet.children).forEach(c => { if(c.textContent === d.persona){ c.classList.add('active'); persona = d.persona; } });
+        const keys = new Set(d.blocks||[]);
+        BRAND_CONFIG.valueBlocks.forEach((b, i) => {
+          if(keys.has(b.key)){
+            selected.add(b.key);
+            const card = $blockGrid.children[i];
+            card.classList.add('selected');
+            card.setAttribute('aria-checked','true');
+          }
+        });
+        renderResult();
+      }
+    }catch(e){ /* ignore */ }
+  })();
+  </script>
+</body>
+</html>
